@@ -76,7 +76,7 @@ function Home() {
             processQueue();
         };
 
-        processQueue(); // 🔥 processa ao montar
+        processQueue();
 
         window.addEventListener("online", handleOnline);
 
