@@ -14,49 +14,13 @@ Sistema POS para restaurantes com controle de estoque baseado em **Ficha Técnic
 
 ## Como Rodar
 
-### Subindo o Banco com Docker 
+
 
 ```bash
-# Na raiz do projeto
-docker-compose up -d
-# PostgreSQL disponível em localhost:5432
+docker-compose up --build
+
+# O frontend ficará online em http://localhost:5173/, além de ser indicado outro endereço nos logs.
 ```
-
-### Backend
-
-```bash
-cd backend
-npm install
-
-# Configure o arquivo .env.example
-
-# Sync no banco e popula com dados iniciais
-npm run seed
-
-# Inicia o servidor
-npm run dev
-# Servidor em: http://localhost:3333
-```
-
-Arquivo .env.example
-```env
-DB_HOST=localhost
-DB_PORT=5432
-DB_NAME=takeat
-DB_USER=postgres
-DB_PASSWORD=postgres
-PORT=3333
-```
-### Frontend
-
-```bash
-cd takeat-frontend
-npm install
-npm run dev
-# App em: http://localhost:5173
-```
-
-> **Proxy**: o frontend usa proxy configurado no `vite.config.js` para `/api` → `http://localhost:3333`
 
 ---
 

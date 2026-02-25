@@ -12,6 +12,45 @@ services:
       - '5432:5432'
     volumes:
       - takeat_pgdata:/var/lib/postgresql/data
+    # Verifica se o Postgres já está pronto a receber conexões
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d takeat"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build: ./backend
+    container_name: takeat_backend
+    ports:
+      - '3333:3333'
+    environment:
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_NAME=takeat
+      - DB_USER=postgres
+      - DB_PASSWORD=postgres
+      - PORT=3333
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+    command: sh -c "npm run seed && npm run dev"
+
+  frontend:
+    build: ./takeat-frontend
+    container_name: takeat_frontend
+    ports:
+      - '5173:5173'
+    environment:
+      - BACKEND_URL=http://backend:3333
+    depends_on:
+      - backend
+    volumes:
+      - ./takeat-frontend:/app
+      - /app/node_modules
 
 volumes:
   takeat_pgdata:
