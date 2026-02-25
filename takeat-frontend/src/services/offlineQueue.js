@@ -6,6 +6,8 @@ export function getQueue() {
 
 export function saveQueue(queue) {
   localStorage.setItem(QUEUE_KEY, JSON.stringify(queue));
+
+  window.dispatchEvent(new Event("queue_updated"));
 }
 
 export function addToQueue(order) {

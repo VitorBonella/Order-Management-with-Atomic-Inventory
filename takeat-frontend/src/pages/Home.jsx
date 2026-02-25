@@ -4,12 +4,56 @@ import { useCart } from "../context/CartContext";
 import { getQueue, saveQueue, addToQueue } from "../services/offlineQueue";
 import "./Home.css";
 
+
+const processQueue = async () => {
+    if (!navigator.onLine) return;
+
+    let queue = getQueue();
+    console.log("Processando fila:", queue);
+
+    while (queue.length > 0) {
+        const item = queue[0];
+
+        try {
+            await createOrder(item.order);
+            console.log("Pedido enviado:", item.id);
+
+            queue.shift();
+            saveQueue(queue);
+
+        } catch (err) {
+            console.log(err);
+
+            const data = err.response?.data;
+
+            // erro falta de estoque
+            if (data?.stock_errors) {
+                const listaIngredientes = data.stock_errors
+                    .map(item => `❌ ${item.input_name}\n   (Temos ${item.available}, mas o pedido exigia ${item.needed})`)
+                    .join("\n\n");
+
+                const mensagem = `⚠️ Atenção: O pedido offline (${item.id}) não pôde ser enviado.\n\nMotivo: ${data.error}\n\nDetalhes:\n${listaIngredientes}\n\nO pedido foi cancelado e removido da fila.`;
+
+                alert(mensagem);
+
+                queue.shift();
+                saveQueue(queue);
+            } else {
+                // erro qualquer
+                console.log("Erro de conexão ou servidor, parando processamento.");
+                break;
+            }
+        }
+    }
+};
+
 function Home() {
     const [products, setProducts] = useState([]);
     const [error, setError] = useState(null);
     const [success, setSuccess] = useState(null);
     const [stockErrors, setStockErrors] = useState([]);
     const { cart, addToCart, removeOneFromCart, removeFromCart, clearCart } = useCart();
+    const [queueLength, setQueueLength] = useState(getQueue().length); // Novo estado
 
     // load produtos
     useEffect(() => {
@@ -27,36 +71,29 @@ function Home() {
 
     //  processamento da fila
     useEffect(() => {
-        async function processQueue() {
-            const queue = getQueue();
-            if (queue.length === 0) return;
+        const handleOnline = () => {
+            console.log("🔥 Evento online disparado");
+            processQueue();
+        };
 
-            const remaining = [];
+        processQueue(); // 🔥 processa ao montar
 
-            for (const item of queue) {
-                try {
-                    await createOrder(item.order);
-                    console.log("Pedido da fila enviado:", item.id);
-                } catch (err) {
-                    // ❗ Conflito tardio (estoque)
-                    if (err.response?.data?.stock_errors) {
-                        alert(
-                            `Pedido offline (${item.id}) falhou por falta de estoque.`
-                        );
-                    } else {
-                        // Ainda offline → mantém na fila
-                        remaining.push(item);
-                    }
-                }
-            }
-
-            saveQueue(remaining);
-        }
-
-        window.addEventListener("online", processQueue);
+        window.addEventListener("online", handleOnline);
 
         return () => {
-            window.removeEventListener("online", processQueue);
+            window.removeEventListener("online", handleOnline);
+        };
+    }, []);
+
+    useEffect(() => {
+        const handleQueueUpdate = () => {
+            setQueueLength(getQueue().length);
+        };
+
+        window.addEventListener("queue_updated", handleQueueUpdate);
+
+        return () => {
+            window.removeEventListener("queue_updated", handleQueueUpdate);
         };
     }, []);
 
@@ -79,7 +116,7 @@ function Home() {
         } catch (err) {
             // nwetwork error
             if (!err.response) {
-                addToQueue({ id: Date.now(), order: cart });
+                addToQueue(cart);
 
                 alert(
                     "Sem conexão. Pedido salvo na fila e será enviado automaticamente."
@@ -129,7 +166,13 @@ function Home() {
 
                 {/* CARRINHO */}
                 <div className="card">
-                    <h2>Carrinho</h2>
+
+                    <h2>
+                        🛒 Carrinho
+                        {queueLength > 0 && (
+                            <> (🔄️ Offline Queue: {queueLength})</>
+                        )}
+                    </h2>
 
                     {cart.length === 0 && <p>Carrinho vazio</p>}
 

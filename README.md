@@ -121,5 +121,5 @@ O `OrderService` garante que **tudo ou nada** é persistido:
 - **Detecção de rede**: via `navigator.onLine` + eventos `online`/`offline`
 - **Fila persistida**: `localStorage` com chave `order_queue`
 - **Auto-sincronização**: ao voltar online, processa a fila automaticamente
-- **Tratamento de conflito tardio**: se ao sincronizar um pedido enfileirado o backend retornar erro de estoque (HTTP 422), ele é avisado via mensagem de erro no carrinho
+- **Tratamento de conflito tardio**: se ao sincronizar um pedido enfileirado o backend retornar erro de estoque (HTTP 422), ele é avisado via mensagem alert de error
 
