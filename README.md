@@ -123,3 +123,9 @@ O `OrderService` garante que **tudo ou nada** é persistido:
 - **Auto-sincronização**: ao voltar online, processa a fila automaticamente
 - **Tratamento de conflito tardio**: se ao sincronizar um pedido enfileirado o backend retornar erro de estoque (HTTP 422), ele é avisado via mensagem alert de error
 
+## O que eu faria com mais tempo
+
+- Testes Abrangentes: Implementação de testes unitários e de integração para garantir a robustez do código.
+- Tratamento de Erros Refinado: Melhoria no gerenciamento de falhas através da criação de classes de exceção customizadas.
+- Logs Estruturados: Implementação de structured logging para facilitar o monitoramento e a depuração.
+- CI/CD completo
