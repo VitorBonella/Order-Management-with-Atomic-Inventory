@@ -17,11 +17,11 @@ app.get('/health', (req, res) => res.json({ status: 'ok' }));
 async function start() {
   try {
     await sequelize.authenticate();
-    console.log('✅ Database connected');
+    console.log('database connected');
     await sequelize.sync();
-    app.listen(PORT, () => console.log(`🚀 Server running on http://localhost:${PORT}`));
+    app.listen(PORT, () => console.log(`server running on http://localhost:${PORT}`));
   } catch (err) {
-    console.error('❌ Failed to start server:', err);
+    console.error('failed to start server:', err);
     process.exit(1);
   }
 }

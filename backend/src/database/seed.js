@@ -7,7 +7,7 @@ async function seed() {
     await sequelize.sync({ force: true });
     console.log('database synced');
 
-    // Create inputs
+    // inputs
     const inputs = await Input.bulkCreate([
       { name: 'Pão de Hambúrguer', unit: 'un', stock_quantity: 20 },
       { name: 'Carne Bovina 150g', unit: 'un', stock_quantity: 15 },

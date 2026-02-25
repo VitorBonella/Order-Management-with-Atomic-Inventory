@@ -6,7 +6,7 @@ class OrderService {
     // items: [{ product_id, quantity }]
     const transaction = await sequelize.transaction();
     try {
-      // 1. Load all products with their inputs (ficha técnica)
+      // 1. load inputs 
       const productIds = items.map(i => i.product_id);
       const products = await Product.findAll({
         where: { id: productIds },
@@ -24,7 +24,7 @@ class OrderService {
         throw { status: 404, message: 'Um ou mais produtos não foram encontrados.' };
       }
 
-      // 2. Calculate total ingredient consumption
+      // 2. total ingredients needed
       const inputConsumption = {}; // { input_id: { quantity_needed, name } }
 
       for (const item of items) {
@@ -42,7 +42,7 @@ class OrderService {
         }
       }
 
-      // 3. Lock input rows for update and validate stock
+      // lock and validate stock
       const stockErrors = [];
       for (const [inputId, { quantity_needed, name, input }] of Object.entries(inputConsumption)) {
         const lockedInput = await Input.findOne({
@@ -70,7 +70,7 @@ class OrderService {
         };
       }
 
-      // 4. Decrement stock atomically
+      // descrement
       for (const [inputId, { quantity_needed }] of Object.entries(inputConsumption)) {
         await Input.decrement('stock_quantity', {
           by: quantity_needed,
@@ -79,7 +79,7 @@ class OrderService {
         });
       }
 
-      // 5. Create order
+      // order
       const total = items.reduce((acc, item) => {
         const product = products.find(p => p.id === item.product_id);
         return acc + parseFloat(product.price) * item.quantity;
@@ -90,7 +90,7 @@ class OrderService {
         { transaction }
       );
 
-      // 6. Create order items
+      // order item
       const orderItemsData = items.map(item => {
         const product = products.find(p => p.id === item.product_id);
         return {

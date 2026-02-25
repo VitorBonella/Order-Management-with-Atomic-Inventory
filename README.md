@@ -50,7 +50,7 @@ PORT=3333
 ### Frontend
 
 ```bash
-cd frontend
+cd takeat-frontend
 npm install
 npm run dev
 # App em: http://localhost:5173
